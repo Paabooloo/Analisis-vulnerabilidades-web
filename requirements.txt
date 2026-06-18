@@ -1,11 +1,5 @@
 fastapi
 uvicorn
 pandas
-time
-re
-BeautifulSoup
-urljoin
-subprocess
-platform
-socket
 requests
+beautifulsoup4
