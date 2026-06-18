@@ -1,6 +1,5 @@
 fastapi
 uvicorn
-io
 pandas
 time
 re
