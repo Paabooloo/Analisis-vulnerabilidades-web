@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+io
+pandas
+time
+re
+BeautifulSoup
+urljoin
+subprocess
+platform
+socket
+requests
