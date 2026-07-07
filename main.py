@@ -14,7 +14,7 @@ import os
 
 app = FastAPI()
 
-IP_PERMITIDA = os.getenv("ALLOWED_IP", "185.9.193.18")
+IP_PERMITIDA = os.getenv("ALLOWED_IP")
 
 @app.middleware("http")
 async def filtro_ip_render(request: Request, call_next):
@@ -36,7 +36,7 @@ async def filtro_ip_render(request: Request, call_next):
             content={"error": "Acceso denegado. Tu dirección IP no está autorizada."}
         )
 
-    # Si todo está bien, la petición continúa normalmente
+    
     response = await call_next(request)
     return response
 
