@@ -1,15 +1,44 @@
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.responses import HTMLResponse, FileResponse 
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 import pandas as pd
 import io
 from modules.vulnerabilidades import vulnerabilidades
 from modules.derivar import derivar
 from modules.ping import ping
 from modules.tabla import tabla
+import os
 # Importa aquí tus funciones actuales. Por ejemplo:
 # from mis_scripts import escanear_vulnerabilidades, buscar_cves, hacer_ping
 
 app = FastAPI()
+
+IP_PERMITIDA = os.getenv("ALLOWED_IP", "185.9.193.18")
+
+@app.middleware("http")
+async def filtro_ip_render(request: Request, call_next):
+    # En Render, la IP real del cliente viene en 'X-Forwarded-For'
+    x_forwarded_for = request.headers.get("X-Forwarded-For")
+    
+    if x_forwarded_for:
+        # Esta cabecera puede contener una lista de IPs separadas por comas
+        # (ej: "IP_Cliente, IP_Proxy1, IP_Proxy2"). La primera siempre es el cliente real.
+        ip_visitante = x_forwarded_for.split(",")[0].strip()
+    else:
+        # Si no existe la cabecera (desarrollo local sin proxy), usamos la conexión directa
+        ip_visitante = request.client.host
+
+    # Validamos si la IP del visitante coincide con la permitida
+    if ip_visitante != IP_PERMITIDA:
+        return JSONResponse(
+            status_code=403, 
+            content={"error": "Acceso denegado. Tu dirección IP no está autorizada."}
+        )
+
+    # Si todo está bien, la petición continúa normalmente
+    response = await call_next(request)
+    return response
 
 # --- AÑADE ESTO ---
 @app.get("/")
@@ -17,6 +46,7 @@ async def mostrar_panel_web():
     # Esto lee tu archivo index.html y lo muestra en el navegador
     return FileResponse("index.html")
 # ------------------
+
 
 
 @app.post("/procesar", response_class=HTMLResponse)
